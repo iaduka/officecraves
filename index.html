@@ -8,6 +8,7 @@
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
     <script>
         tailwind.config = {
             theme: {
@@ -44,6 +45,12 @@
     <div id="root"></div>
     <script type="text/babel">
         const { useState, useEffect, useCallback } = React;
+
+        // ─── Supabase Client ─────────────────────────────────────────
+        const SUPABASE_URL = 'https://tdzrhmmsxzrvkepgvkfk.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRkenJobW1zeHpydmtlcGd2a2ZrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk5NjgxNDEsImV4cCI6MjA5NTU0NDE0MX0.XVyIMrjsv4EAnfaRNulctIs35w_oomVreKh66pGNBZI';
+        const { createClient } = window.supabase;
+        const supabaseClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
         // ─── Menu Data ───────────────────────────────────────────────
         const MENU = [
@@ -94,6 +101,7 @@
         const STAFF_NAMES = ["Anthony", "Amir", "Biow Ee", "Diana", "Florian", "Frank", "Frankie", "Gerald", "Henry", "Ian", "Jimmy", "Kah Huat", "Pete", "Ricky", "Sai Lam", "William", "Yoke Fong"];
 
         // ─── LocalStorage Helpers ────────────────────────────────────
+        // (kept as fallback, primary storage is now Supabase)
         function loadOrders() {
             try {
                 const data = localStorage.getItem('officecraves_orders');
@@ -101,8 +109,57 @@
             } catch { return []; }
         }
 
-        function saveOrders(orders) {
+        function saveOrdersLocal(orders) {
             localStorage.setItem('officecraves_orders', JSON.stringify(orders));
+        }
+
+        // ─── Supabase Helpers ────────────────────────────────────────
+        async function fetchOrders() {
+            const { data, error } = await supabaseClient
+                .from('orders')
+                .select('*')
+                .order('created_at', { ascending: true });
+            if (error) {
+                console.error('Error fetching orders:', error);
+                return loadOrders();
+            }
+            return data.map(row => ({
+                id: row.id,
+                staffName: row.staff_name,
+                items: row.items,
+                notes: row.notes || '',
+                timestamp: row.created_at,
+            }));
+        }
+
+        async function insertOrder(order) {
+            const { error } = await supabaseClient.from('orders').insert({
+                id: order.id,
+                staff_name: order.staffName,
+                items: order.items,
+                notes: order.notes,
+                created_at: order.timestamp,
+            });
+            if (error) console.error('Error inserting order:', error);
+        }
+
+        async function updateOrder(order) {
+            const { error } = await supabaseClient.from('orders').update({
+                staff_name: order.staffName,
+                items: order.items,
+                notes: order.notes,
+            }).eq('id', order.id);
+            if (error) console.error('Error updating order:', error);
+        }
+
+        async function deleteOrder(id) {
+            const { error } = await supabaseClient.from('orders').delete().eq('id', id);
+            if (error) console.error('Error deleting order:', error);
+        }
+
+        async function deleteAllOrders() {
+            const { error } = await supabaseClient.from('orders').delete().neq('id', 0);
+            if (error) console.error('Error deleting all orders:', error);
         }
 
         // ─── Components ──────────────────────────────────────────────
@@ -392,13 +449,68 @@
 
         // ─── App ─────────────────────────────────────────────────────
         function App() {
-            const [orders, setOrders] = useState(loadOrders);
+            const [orders, setOrders] = useState([]);
+            const [loading, setLoading] = useState(true);
             const [modalOpen, setModalOpen] = useState(false);
             const [editingOrder, setEditingOrder] = useState(null);
             const [selectedItem, setSelectedItem] = useState(null);
             const [confirmDialog, setConfirmDialog] = useState({ open: false, message: '', onConfirm: null });
 
-            useEffect(() => { saveOrders(orders); }, [orders]);
+            // Load orders from Supabase on mount
+            useEffect(() => {
+                fetchOrders().then(data => {
+                    setOrders(data);
+                    saveOrdersLocal(data);
+                    setLoading(false);
+                });
+            }, []);
+
+            // Real-time subscription
+            useEffect(() => {
+                const channel = supabaseClient
+                    .channel('orders-realtime')
+                    .on('postgres_changes', { event: '*', schema: 'public', table: 'orders' }, (payload) => {
+                        if (payload.eventType === 'INSERT') {
+                            const row = payload.new;
+                            const newOrder = {
+                                id: row.id,
+                                staffName: row.staff_name,
+                                items: row.items,
+                                notes: row.notes || '',
+                                timestamp: row.created_at,
+                            };
+                            setOrders(prev => {
+                                if (prev.find(o => o.id === newOrder.id)) return prev;
+                                const updated = [...prev, newOrder];
+                                saveOrdersLocal(updated);
+                                return updated;
+                            });
+                        } else if (payload.eventType === 'UPDATE') {
+                            const row = payload.new;
+                            setOrders(prev => {
+                                const updated = prev.map(o => o.id === row.id ? {
+                                    id: row.id,
+                                    staffName: row.staff_name,
+                                    items: row.items,
+                                    notes: row.notes || '',
+                                    timestamp: row.created_at,
+                                } : o);
+                                saveOrdersLocal(updated);
+                                return updated;
+                            });
+                        } else if (payload.eventType === 'DELETE') {
+                            const oldRow = payload.old;
+                            setOrders(prev => {
+                                const updated = prev.filter(o => o.id !== oldRow.id);
+                                saveOrdersLocal(updated);
+                                return updated;
+                            });
+                        }
+                    })
+                    .subscribe();
+
+                return () => { supabaseClient.removeChannel(channel); };
+            }, []);
 
             const totalOrders = orders.length;
 
@@ -414,11 +526,13 @@
                 setModalOpen(true);
             };
 
-            const handleSubmitOrder = (order) => {
+            const handleSubmitOrder = async (order) => {
                 if (editingOrder) {
                     setOrders(orders.map(o => o.id === order.id ? order : o));
+                    await updateOrder(order);
                 } else {
                     setOrders([...orders, order]);
+                    await insertOrder(order);
                 }
             };
 
@@ -432,9 +546,10 @@
                 setConfirmDialog({
                     open: true,
                     message: 'Are you sure you want to remove this order?',
-                    onConfirm: () => {
+                    onConfirm: async () => {
                         setOrders(orders.filter(o => o.id !== id));
                         setConfirmDialog({ open: false, message: '', onConfirm: null });
+                        await deleteOrder(id);
                     }
                 });
             };
@@ -442,10 +557,11 @@
             const handleReset = () => {
                 setConfirmDialog({
                     open: true,
-                    message: "This will clear all of today's orders. Are you sure?",
-                    onConfirm: () => {
+                    message: "This will clear all orders. Are you sure?",
+                    onConfirm: async () => {
                         setOrders([]);
                         setConfirmDialog({ open: false, message: '', onConfirm: null });
+                        await deleteAllOrders();
                     }
                 });
             };
@@ -454,6 +570,14 @@
                 <div className="min-h-screen bg-gray-50">
                     <Header totalOrders={totalOrders} onReset={handleReset} />
 
+                    {loading ? (
+                        <div className="flex items-center justify-center py-20">
+                            <div className="text-center">
+                                <div className="text-3xl mb-3 animate-pulse">☕</div>
+                                <p className="text-sm text-gray-400">Loading orders...</p>
+                            </div>
+                        </div>
+                    ) : (
                     <main className="max-w-7xl mx-auto px-4 sm:px-6 py-6">
                         <div className="lg:grid lg:grid-cols-5 lg:gap-8">
                             {/* Menu Section */}
@@ -494,6 +618,7 @@
                             </div>
                         </div>
                     </main>
+                    )}
 
                     <OrderModal
                         isOpen={modalOpen}
