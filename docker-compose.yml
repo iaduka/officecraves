@@ -3,5 +3,5 @@ services:
     build: .
     container_name: kopi-teh
     ports:
-      - "8080:80"
+      - "777"
     restart: unless-stopped
