@@ -1,0 +1,7 @@
+services:
+  kopi-teh:
+    build: .
+    container_name: kopi-teh
+    ports:
+      - "80:80"
+    restart: unless-stopped
