@@ -54,12 +54,26 @@
 
         // ─── Menu Data ───────────────────────────────────────────────
         // Cup icons: color represents drink type, extras show modifiers
-        const CupIcon = ({ fill, ice, strong, light }) => (
+        const CupIcon = ({ fill, ice, strong, light, teabag }) => (
             <svg width="96" height="96" viewBox="0 0 32 32" className="flex-shrink-0">
                 {/* Cup body */}
                 <rect x="6" y="10" width="16" height="18" rx="2" fill={fill} opacity="0.9" />
                 {/* Cup handle */}
                 <path d="M22 14 C26 14, 26 22, 22 22" stroke={fill} strokeWidth="2" fill="none" opacity="0.7" />
+                {/* Tea bag */}
+                {teabag && (
+                    <>
+                        {/* Tag hanging outside the cup */}
+                        <rect x="23" y="8" width="5" height="4" rx="0.8" fill="#fef9c3" stroke="#ca8a04" strokeWidth="0.5" />
+                        <text x="25.5" y="11" textAnchor="middle" fontSize="2.5" fill="#ca8a04" fontWeight="bold">T</text>
+                        {/* String from tag to rim */}
+                        <path d="M23 10 L21 10 L20 10" stroke="#92400e" strokeWidth="0.6" fill="none" />
+                        {/* String going into the cup */}
+                        <path d="M20 10 L17 15 L16 19" stroke="#92400e" strokeWidth="0.6" fill="none" strokeDasharray="1 0.5" />
+                        {/* Tea bag submerged in cup */}
+                        <rect x="14" y="18" width="5" height="6" rx="1.2" fill="#a16207" opacity="0.7" stroke="#78350f" strokeWidth="0.4" />
+                    </>
+                )}
                 {/* Steam or ice */}
                 {ice ? (
                     <>
@@ -104,28 +118,28 @@
                     { id: 12, name: "Kopi Di-Lo", description: "Coffee with less condensed milk", cup: { fill: '#78350f', ice: false }, sugar: 'normal' },
                     { id: 13, name: "Kopi Siew Dai", description: "Less sugar", cup: { fill: '#78350f', ice: false }, sugar: 'less' },
                     { id: 14, name: "Kopi C Gao", description: "Strong coffee with evaporated milk", cup: { fill: '#451a03', ice: false, strong: true }, sugar: 'normal' },
-                    { id: 15, name: "Yuan Yang / Cham", description: "Mix of coffee and tea", cup: { fill: '#b45309', ice: false }, sugar: 'normal' },
+                    { id: 15, name: "Yuan Yang / Cham", description: "Mix of coffee and tea", cup: { fill: '#b45309', ice: false, teabag: true }, sugar: 'normal' },
                 ]
             },
             {
                 category: "Teh (Tea)",
                 icon: "🍵",
                 items: [
-                    { id: 16, name: "Teh", description: "Tea with condensed milk + sugar", cup: { fill: '#b45309', ice: false }, sugar: 'normal' },
-                    { id: 17, name: "Teh-O", description: "Black tea with sugar", cup: { fill: '#dc2626', ice: false }, sugar: 'normal' },
-                    { id: 18, name: "Teh-C", description: "Tea with evaporated milk + sugar", cup: { fill: '#d97706', ice: false }, sugar: 'normal' },
-                    { id: 19, name: "Teh Kosong", description: "Tea without sugar", cup: { fill: '#b45309', ice: false }, sugar: 'none' },
-                    { id: 20, name: "Teh-O Kosong", description: "Plain black tea, no sugar", cup: { fill: '#dc2626', ice: false }, sugar: 'none' },
-                    { id: 21, name: "Teh-C Kosong", description: "Tea with evaporated milk, no sugar", cup: { fill: '#d97706', ice: false }, sugar: 'none' },
-                    { id: 22, name: "Teh Peng", description: "Iced milk tea", cup: { fill: '#b45309', ice: true }, sugar: 'normal' },
-                    { id: 23, name: "Teh-O Peng", description: "Iced black tea", cup: { fill: '#dc2626', ice: true }, sugar: 'normal' },
-                    { id: 24, name: "Teh-C Peng", description: "Iced tea with evaporated milk", cup: { fill: '#d97706', ice: true }, sugar: 'normal' },
-                    { id: 25, name: "Teh Tarik", description: "Pulled milk tea with frothy texture", cup: { fill: '#b45309', ice: false }, sugar: 'normal' },
-                    { id: 26, name: "Teh Halia", description: "Ginger tea", cup: { fill: '#ca8a04', ice: false }, sugar: 'normal' },
-                    { id: 27, name: "Teh Si", description: "Tea with evaporated milk (less sweet than regular teh)", cup: { fill: '#d97706', ice: false }, sugar: 'less' },
-                    { id: 28, name: "Teh Gao", description: "Strong tea", cup: { fill: '#7c2d12', ice: false, strong: true }, sugar: 'normal' },
-                    { id: 29, name: "Teh Po", description: "Weak/light tea", cup: { fill: '#fbbf24', ice: false, light: true }, sugar: 'normal' },
-                    { id: 30, name: "Teh Siew Dai", description: "Less sugar", cup: { fill: '#b45309', ice: false }, sugar: 'less' },
+                    { id: 16, name: "Teh", description: "Tea with condensed milk + sugar", cup: { fill: '#b45309', ice: false, teabag: true }, sugar: 'normal' },
+                    { id: 17, name: "Teh-O", description: "Black tea with sugar", cup: { fill: '#dc2626', ice: false, teabag: true }, sugar: 'normal' },
+                    { id: 18, name: "Teh-C", description: "Tea with evaporated milk + sugar", cup: { fill: '#d97706', ice: false, teabag: true }, sugar: 'normal' },
+                    { id: 19, name: "Teh Kosong", description: "Tea without sugar", cup: { fill: '#b45309', ice: false, teabag: true }, sugar: 'none' },
+                    { id: 20, name: "Teh-O Kosong", description: "Plain black tea, no sugar", cup: { fill: '#dc2626', ice: false, teabag: true }, sugar: 'none' },
+                    { id: 21, name: "Teh-C Kosong", description: "Tea with evaporated milk, no sugar", cup: { fill: '#d97706', ice: false, teabag: true }, sugar: 'none' },
+                    { id: 22, name: "Teh Peng", description: "Iced milk tea", cup: { fill: '#b45309', ice: true, teabag: true }, sugar: 'normal' },
+                    { id: 23, name: "Teh-O Peng", description: "Iced black tea", cup: { fill: '#dc2626', ice: true, teabag: true }, sugar: 'normal' },
+                    { id: 24, name: "Teh-C Peng", description: "Iced tea with evaporated milk", cup: { fill: '#d97706', ice: true, teabag: true }, sugar: 'normal' },
+                    { id: 25, name: "Teh Tarik", description: "Pulled milk tea with frothy texture", cup: { fill: '#b45309', ice: false, teabag: true }, sugar: 'normal' },
+                    { id: 26, name: "Teh Halia", description: "Ginger tea", cup: { fill: '#ca8a04', ice: false, teabag: true }, sugar: 'normal' },
+                    { id: 27, name: "Teh Si", description: "Tea with evaporated milk (less sweet than regular teh)", cup: { fill: '#d97706', ice: false, teabag: true }, sugar: 'less' },
+                    { id: 28, name: "Teh Gao", description: "Strong tea", cup: { fill: '#7c2d12', ice: false, strong: true, teabag: true }, sugar: 'normal' },
+                    { id: 29, name: "Teh Po", description: "Weak/light tea", cup: { fill: '#fbbf24', ice: false, light: true, teabag: true }, sugar: 'normal' },
+                    { id: 30, name: "Teh Siew Dai", description: "Less sugar", cup: { fill: '#b45309', ice: false, teabag: true }, sugar: 'less' },
                 ]
             }
         ];
@@ -252,7 +266,7 @@
                     <div>
                         <div className="flex items-start gap-3 mb-2">
                             <div className="flex flex-col items-center gap-1">
-                                <CupIcon fill={item.cup.fill} ice={item.cup.ice} strong={item.cup.strong} light={item.cup.light} />
+                                <CupIcon fill={item.cup.fill} ice={item.cup.ice} strong={item.cup.strong} light={item.cup.light} teabag={item.cup.teabag} />
                                 <SugarBadge level={item.sugar} />
                             </div>
                             <div className="flex-1">
@@ -274,8 +288,8 @@
         function MenuSection({ category, icon, items, onAdd }) {
             return (
                 <div className="mb-6">
-                    <h3 className="text-sm font-semibold text-gray-700 mb-3 flex items-center gap-2">
-                        <span>{icon}</span> {category}
+                    <h3 className="text-lg font-semibold text-gray-700 mb-3 flex items-center gap-2">
+                        <span className="text-2xl">{icon}</span> {category}
                     </h3>
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
                         {items.map(item => (
@@ -725,7 +739,7 @@
                             <div className="lg:col-span-2 mt-8 lg:mt-0">
                                 <div className="sticky top-[85px]">
                                     <h2 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
-                                        <span>📋</span> Team's Order
+                                        <span>📋</span> DAAA Team's Order
                                         {orders.length > 0 && (
                                             <span className="text-xs bg-brand-100 text-brand-700 px-2 py-0.5 rounded-full font-semibold">{orders.length}</span>
                                         )}
