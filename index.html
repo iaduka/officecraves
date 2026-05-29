@@ -432,6 +432,43 @@
             );
         }
 
+        function PasswordModal({ isOpen, onSubmit, onCancel }) {
+            const [password, setPassword] = useState('');
+
+            useEffect(() => {
+                if (isOpen) setPassword('');
+            }, [isOpen]);
+
+            if (!isOpen) return null;
+
+            const handleSubmit = (e) => {
+                e.preventDefault();
+                onSubmit(password);
+            };
+
+            return (
+                <div className="modal-overlay fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm" onClick={onCancel}>
+                    <div className="modal-content bg-white rounded-xl shadow-xl p-6 max-w-sm w-full" onClick={e => e.stopPropagation()}>
+                        <h3 className="text-sm font-semibold text-gray-900 mb-3">Enter admin password</h3>
+                        <form onSubmit={handleSubmit}>
+                            <input
+                                type="password"
+                                value={password}
+                                onChange={e => setPassword(e.target.value)}
+                                placeholder="••••••••"
+                                className="w-full px-3 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent mb-4"
+                                autoFocus
+                            />
+                            <div className="flex gap-3">
+                                <button type="button" onClick={onCancel} className="flex-1 py-2 rounded-lg border border-gray-200 text-sm font-medium text-gray-600 hover:bg-gray-50">Cancel</button>
+                                <button type="submit" className="flex-1 py-2 rounded-lg bg-brand-600 text-white text-sm font-medium hover:bg-brand-700">Submit</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            );
+        }
+
         function ConfirmDialog({ isOpen, message, onConfirm, onCancel }) {
             if (!isOpen) return null;
             return (
@@ -455,6 +492,7 @@
             const [editingOrder, setEditingOrder] = useState(null);
             const [selectedItem, setSelectedItem] = useState(null);
             const [confirmDialog, setConfirmDialog] = useState({ open: false, message: '', onConfirm: null });
+            const [passwordModalOpen, setPasswordModalOpen] = useState(false);
 
             // Load orders from Supabase on mount
             useEffect(() => {
@@ -555,6 +593,15 @@
             };
 
             const handleReset = () => {
+                setPasswordModalOpen(true);
+            };
+
+            const handlePasswordSubmit = (password) => {
+                setPasswordModalOpen(false);
+                if (password !== "RedMonth77&") {
+                    alert("Incorrect password.");
+                    return;
+                }
                 setConfirmDialog({
                     open: true,
                     message: "This will clear all orders. Are you sure?",
@@ -633,6 +680,12 @@
                         message={confirmDialog.message}
                         onConfirm={confirmDialog.onConfirm}
                         onCancel={() => setConfirmDialog({ open: false, message: '', onConfirm: null })}
+                    />
+
+                    <PasswordModal
+                        isOpen={passwordModalOpen}
+                        onSubmit={handlePasswordSubmit}
+                        onCancel={() => setPasswordModalOpen(false)}
                     />
                 </div>
             );
