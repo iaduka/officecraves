@@ -53,47 +53,79 @@
         const supabaseClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
         // ─── Menu Data ───────────────────────────────────────────────
+        // Cup icons: color represents drink type, extras show modifiers
+        const CupIcon = ({ fill, ice, strong, light }) => (
+            <svg width="96" height="96" viewBox="0 0 32 32" className="flex-shrink-0">
+                {/* Cup body */}
+                <rect x="6" y="10" width="16" height="18" rx="2" fill={fill} opacity="0.9" />
+                {/* Cup handle */}
+                <path d="M22 14 C26 14, 26 22, 22 22" stroke={fill} strokeWidth="2" fill="none" opacity="0.7" />
+                {/* Steam or ice */}
+                {ice ? (
+                    <>
+                        <rect x="9" y="13" width="4" height="4" rx="1" fill="#bfdbfe" opacity="0.8" />
+                        <rect x="14" y="16" width="4" height="4" rx="1" fill="#bfdbfe" opacity="0.6" />
+                        <rect x="10" y="19" width="4" height="4" rx="1" fill="#bfdbfe" opacity="0.7" />
+                    </>
+                ) : (
+                    <>
+                        <path d="M10 8 Q11 5, 10 3" stroke="#9ca3af" strokeWidth="1" fill="none" opacity="0.5" />
+                        <path d="M14 8 Q15 4, 14 2" stroke="#9ca3af" strokeWidth="1" fill="none" opacity="0.5" />
+                        <path d="M18 8 Q19 5, 18 3" stroke="#9ca3af" strokeWidth="1" fill="none" opacity="0.5" />
+                    </>
+                )}
+                {/* Milk layer for C/condensed */}
+                {fill !== '#1c1917' && (
+                    <rect x="6" y="22" width="16" height="6" rx="0" fill="#fef3c7" opacity="0.5" />
+                )}
+                {/* Strong indicator */}
+                {strong && <circle cx="14" cy="6" r="2" fill="#dc2626" opacity="0.7" />}
+                {/* Light indicator */}
+                {light && <circle cx="14" cy="6" r="2" fill="#86efac" opacity="0.7" />}
+            </svg>
+        );
+
         const MENU = [
             {
                 category: "Kopi (Coffee)",
                 icon: "☕",
                 items: [
-                    { id: 1, name: "Kopi", description: "Coffee with condensed milk + sugar" },
-                    { id: 2, name: "Kopi-O", description: "Black coffee with sugar" },
-                    { id: 3, name: "Kopi-C", description: "Coffee with evaporated milk + sugar" },
-                    { id: 4, name: "Kopi Kosong", description: "Coffee with no sugar" },
-                    { id: 5, name: "Kopi-O Kosong", description: "Black coffee, no sugar" },
-                    { id: 6, name: "Kopi-C Kosong", description: "Coffee with evaporated milk, no sugar" },
-                    { id: 7, name: "Kopi Peng", description: "Iced kopi" },
-                    { id: 8, name: "Kopi-O Peng", description: "Iced black coffee" },
-                    { id: 9, name: "Kopi-C Peng", description: "Iced coffee with evaporated milk" },
-                    { id: 10, name: "Kopi Gao", description: "Extra strong coffee" },
-                    { id: 11, name: "Kopi Po", description: "Weaker/light coffee" },
-                    { id: 12, name: "Kopi Di-Lo", description: "Coffee with less condensed milk" },
-                    { id: 13, name: "Kopi Siew Dai", description: "Less sugar" },
-                    { id: 14, name: "Kopi C Gao", description: "Strong coffee with evaporated milk" },
-                    { id: 15, name: "Yuan Yang / Cham", description: "Mix of coffee and tea" },
+                    { id: 1, name: "Kopi", description: "Coffee with condensed milk + sugar", cup: { fill: '#78350f', ice: false }, sugar: 'normal' },
+                    { id: 2, name: "Kopi-O", description: "Black coffee with sugar", cup: { fill: '#1c1917', ice: false }, sugar: 'normal' },
+                    { id: 3, name: "Kopi-C", description: "Coffee with evaporated milk + sugar", cup: { fill: '#92400e', ice: false }, sugar: 'normal' },
+                    { id: 4, name: "Kopi Kosong", description: "Coffee with no sugar", cup: { fill: '#78350f', ice: false }, sugar: 'none' },
+                    { id: 5, name: "Kopi-O Kosong", description: "Black coffee, no sugar", cup: { fill: '#1c1917', ice: false }, sugar: 'none' },
+                    { id: 6, name: "Kopi-C Kosong", description: "Coffee with evaporated milk, no sugar", cup: { fill: '#92400e', ice: false }, sugar: 'none' },
+                    { id: 7, name: "Kopi Peng", description: "Iced kopi", cup: { fill: '#78350f', ice: true }, sugar: 'normal' },
+                    { id: 8, name: "Kopi-O Peng", description: "Iced black coffee", cup: { fill: '#1c1917', ice: true }, sugar: 'normal' },
+                    { id: 9, name: "Kopi-C Peng", description: "Iced coffee with evaporated milk", cup: { fill: '#92400e', ice: true }, sugar: 'normal' },
+                    { id: 10, name: "Kopi Gao", description: "Extra strong coffee", cup: { fill: '#451a03', ice: false, strong: true }, sugar: 'normal' },
+                    { id: 11, name: "Kopi Po", description: "Weaker/light coffee", cup: { fill: '#a16207', ice: false, light: true }, sugar: 'normal' },
+                    { id: 12, name: "Kopi Di-Lo", description: "Coffee with less condensed milk", cup: { fill: '#78350f', ice: false }, sugar: 'normal' },
+                    { id: 13, name: "Kopi Siew Dai", description: "Less sugar", cup: { fill: '#78350f', ice: false }, sugar: 'less' },
+                    { id: 14, name: "Kopi C Gao", description: "Strong coffee with evaporated milk", cup: { fill: '#451a03', ice: false, strong: true }, sugar: 'normal' },
+                    { id: 15, name: "Yuan Yang / Cham", description: "Mix of coffee and tea", cup: { fill: '#b45309', ice: false }, sugar: 'normal' },
                 ]
             },
             {
                 category: "Teh (Tea)",
                 icon: "🍵",
                 items: [
-                    { id: 16, name: "Teh", description: "Tea with condensed milk + sugar" },
-                    { id: 17, name: "Teh-O", description: "Black tea with sugar" },
-                    { id: 18, name: "Teh-C", description: "Tea with evaporated milk + sugar" },
-                    { id: 19, name: "Teh Kosong", description: "Tea without sugar" },
-                    { id: 20, name: "Teh-O Kosong", description: "Plain black tea, no sugar" },
-                    { id: 21, name: "Teh-C Kosong", description: "Tea with evaporated milk, no sugar" },
-                    { id: 22, name: "Teh Peng", description: "Iced milk tea" },
-                    { id: 23, name: "Teh-O Peng", description: "Iced black tea" },
-                    { id: 24, name: "Teh-C Peng", description: "Iced tea with evaporated milk" },
-                    { id: 25, name: "Teh Tarik", description: "Pulled milk tea with frothy texture" },
-                    { id: 26, name: "Teh Halia", description: "Ginger tea" },
-                    { id: 27, name: "Teh Si", description: "Tea with evaporated milk (less sweet than regular teh)" },
-                    { id: 28, name: "Teh Gao", description: "Strong tea" },
-                    { id: 29, name: "Teh Po", description: "Weak/light tea" },
-                    { id: 30, name: "Teh Siew Dai", description: "Less sugar" },
+                    { id: 16, name: "Teh", description: "Tea with condensed milk + sugar", cup: { fill: '#b45309', ice: false }, sugar: 'normal' },
+                    { id: 17, name: "Teh-O", description: "Black tea with sugar", cup: { fill: '#dc2626', ice: false }, sugar: 'normal' },
+                    { id: 18, name: "Teh-C", description: "Tea with evaporated milk + sugar", cup: { fill: '#d97706', ice: false }, sugar: 'normal' },
+                    { id: 19, name: "Teh Kosong", description: "Tea without sugar", cup: { fill: '#b45309', ice: false }, sugar: 'none' },
+                    { id: 20, name: "Teh-O Kosong", description: "Plain black tea, no sugar", cup: { fill: '#dc2626', ice: false }, sugar: 'none' },
+                    { id: 21, name: "Teh-C Kosong", description: "Tea with evaporated milk, no sugar", cup: { fill: '#d97706', ice: false }, sugar: 'none' },
+                    { id: 22, name: "Teh Peng", description: "Iced milk tea", cup: { fill: '#b45309', ice: true }, sugar: 'normal' },
+                    { id: 23, name: "Teh-O Peng", description: "Iced black tea", cup: { fill: '#dc2626', ice: true }, sugar: 'normal' },
+                    { id: 24, name: "Teh-C Peng", description: "Iced tea with evaporated milk", cup: { fill: '#d97706', ice: true }, sugar: 'normal' },
+                    { id: 25, name: "Teh Tarik", description: "Pulled milk tea with frothy texture", cup: { fill: '#b45309', ice: false }, sugar: 'normal' },
+                    { id: 26, name: "Teh Halia", description: "Ginger tea", cup: { fill: '#ca8a04', ice: false }, sugar: 'normal' },
+                    { id: 27, name: "Teh Si", description: "Tea with evaporated milk (less sweet than regular teh)", cup: { fill: '#d97706', ice: false }, sugar: 'less' },
+                    { id: 28, name: "Teh Gao", description: "Strong tea", cup: { fill: '#7c2d12', ice: false, strong: true }, sugar: 'normal' },
+                    { id: 29, name: "Teh Po", description: "Weak/light tea", cup: { fill: '#fbbf24', ice: false, light: true }, sugar: 'normal' },
+                    { id: 30, name: "Teh Siew Dai", description: "Less sugar", cup: { fill: '#b45309', ice: false }, sugar: 'less' },
                 ]
             }
         ];
@@ -195,12 +227,39 @@
             );
         }
 
+        const SugarBadge = ({ level }) => {
+            if (level === 'normal') return (
+                <span className="inline-flex items-center gap-0.5 text-[10px] font-medium text-amber-700 bg-amber-50 border border-amber-200 rounded px-1.5 py-0.5">
+                    🍬 Normal
+                </span>
+            );
+            if (level === 'less') return (
+                <span className="inline-flex items-center gap-0.5 text-[10px] font-medium text-blue-700 bg-blue-50 border border-blue-200 rounded px-1.5 py-0.5">
+                    🍬 Less
+                </span>
+            );
+            if (level === 'none') return (
+                <span className="inline-flex items-center gap-0.5 text-[10px] font-medium text-green-700 bg-green-50 border border-green-200 rounded px-1.5 py-0.5">
+                    ✕ No Sugar
+                </span>
+            );
+            return null;
+        };
+
         function MenuItem({ item, onAdd }) {
             return (
-                <div className="bg-white rounded-xl border border-gray-100 p-4 hover:shadow-md hover:border-brand-200 transition-all duration-200 flex flex-col justify-between">
+                <div className="bg-white rounded-xl border border-gray-100 p-4 hover:shadow-lg hover:border-brand-400 hover:scale-[1.02] hover:bg-brand-50/30 transition-all duration-200 flex flex-col justify-between">
                     <div>
-                        <h4 className="font-semibold text-gray-900 text-sm mb-1">{item.name}</h4>
-                        <p className="text-xs text-gray-500 leading-relaxed">{item.description}</p>
+                        <div className="flex items-start gap-3 mb-2">
+                            <div className="flex flex-col items-center gap-1">
+                                <CupIcon fill={item.cup.fill} ice={item.cup.ice} strong={item.cup.strong} light={item.cup.light} />
+                                <SugarBadge level={item.sugar} />
+                            </div>
+                            <div className="flex-1">
+                                <h4 className="font-semibold text-gray-900 text-sm">{item.name}</h4>
+                                <p className="text-xs text-gray-500 leading-relaxed mt-0.5">{item.description}</p>
+                            </div>
+                        </div>
                     </div>
                     <button
                         onClick={() => onAdd(item)}
@@ -297,17 +356,30 @@
                             {/* Staff Name */}
                             <div>
                                 <label className="block text-sm font-medium text-gray-700 mb-1.5">Staff Name</label>
-                                <input
-                                    list="staff-names"
-                                    value={staffName}
-                                    onChange={e => setStaffName(e.target.value)}
-                                    placeholder="Type or select your name"
-                                    className="w-full px-3 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent"
-                                    required
-                                />
-                                <datalist id="staff-names">
-                                    {STAFF_NAMES.map(name => <option key={name} value={name} />)}
-                                </datalist>
+                                <select
+                                    value={STAFF_NAMES.includes(staffName) ? staffName : '__custom__'}
+                                    onChange={e => {
+                                        if (e.target.value === '__custom__') {
+                                            setStaffName('');
+                                        } else {
+                                            setStaffName(e.target.value);
+                                        }
+                                    }}
+                                    className="w-full px-3 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent mb-2"
+                                >
+                                    <option value="" disabled>Select your name</option>
+                                    {STAFF_NAMES.map(name => <option key={name} value={name}>{name}</option>)}
+                                    <option value="__custom__">Other (type below)</option>
+                                </select>
+                                {!STAFF_NAMES.includes(staffName) && (
+                                    <input
+                                        type="text"
+                                        value={staffName}
+                                        onChange={e => setStaffName(e.target.value)}
+                                        placeholder="Type your name"
+                                        className="w-full px-3 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent"
+                                    />
+                                )}
                             </div>
 
                             {/* Selected Items */}
