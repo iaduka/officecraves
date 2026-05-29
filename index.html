@@ -212,29 +212,34 @@
 
         function Header({ totalOrders, onReset }) {
             return (
-                <header className="bg-white border-b border-gray-200 sticky top-0 z-30">
-                    <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4">
-                        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-                            <div className="flex items-center gap-3">
-                                <div className="w-9 h-9 bg-brand-600 rounded-lg flex items-center justify-center">
-                                    <span className="text-white text-lg">🍴</span>
+                <header className="sticky top-0 z-30">
+                    {/* Hero banner with image */}
+                    <div className="relative h-32 sm:h-40 overflow-hidden">
+                        <img
+                            src="header.jpg"
+                            alt="Kopi and Teh"
+                            className="w-full h-full object-cover"
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-r from-black/60 via-black/40 to-black/60"></div>
+                        <div className="absolute inset-0 flex items-center justify-center">
+                            <h1 className="text-3xl sm:text-4xl font-bold text-white tracking-wide drop-shadow-lg">OfficeCraves</h1>
+                        </div>
+                    </div>
+                    {/* Stats bar */}
+                    <div className="bg-white border-b border-gray-200 px-4 sm:px-6 py-3">
+                        <div className="max-w-7xl mx-auto flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                            <div className="bg-brand-50 border border-brand-100 rounded-lg px-4 py-2">
+                                <div className="text-sm">
+                                    <span className="text-gray-500">Orders today:</span>
+                                    <span className="ml-1 font-semibold text-brand-700">{totalOrders}</span>
                                 </div>
-                                <h1 className="text-xl font-bold text-gray-900">OfficeCraves</h1>
                             </div>
-                            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
-                                <div className="bg-brand-50 border border-brand-100 rounded-lg px-4 py-2">
-                                    <div className="text-sm">
-                                        <span className="text-gray-500">Orders today:</span>
-                                        <span className="ml-1 font-semibold text-brand-700">{totalOrders}</span>
-                                    </div>
-                                </div>
-                                <button
-                                    onClick={onReset}
-                                    className="text-sm px-3 py-2 rounded-lg border border-red-200 text-red-600 hover:bg-red-50 transition-colors font-medium"
-                                >
-                                    Reset All
-                                </button>
-                            </div>
+                            <button
+                                onClick={onReset}
+                                className="text-sm px-3 py-2 rounded-lg border border-red-200 text-red-600 hover:bg-red-50 transition-colors font-medium"
+                            >
+                                Reset All
+                            </button>
                         </div>
                     </div>
                 </header>
