@@ -3,15 +3,39 @@ services:
     build: .
     container_name: kopi-teh
     restart: unless-stopped
-    labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.kopi-teh.rule=Host(`yourdomain.com`)"
-      - "traefik.http.routers.kopi-teh.entrypoints=websecure"
-      - "traefik.http.routers.kopi-teh.tls.certresolver=letsencrypt"
-      - "traefik.http.services.kopi-teh.loadbalancer.server.port=80"
     networks:
-      - traefik
+      - App-Net
+
+    labels:
+    # 1. Enable Traefik for this container
+      - traefik.enable=true
+
+    # 2. Which domain should reach this app?
+      - traefik.http.routers.kopi-teh.rule=Host(`${SUBDOMAIN7}.${DOMAIN_NAME}`)
+  
+    # 3. Enable HTTPS/SSL with automatic certificate
+      - traefik.http.routers.kopi-teh.tls=true
+      - traefik.http.routers.kopi-teh.tls.certresolver=mytlschallenge
+
+    # 4. Accept traffic on HTTP (80) and HTTPS (443)
+      - traefik.http.routers.kopi-teh.entrypoints=web,websecure
+
+    # 5. Tell Traefik which port your app uses internally
+      - traefik.http.services.kopi-teh.loadbalancer.server.port=${PORT7}
+
+    # Security headers 
+      - traefik.http.middlewares.kopi-teh.headers.SSLRedirect=true
+      - traefik.http.middlewares.kopi-teh.headers.STSSeconds=315360000
+      - traefik.http.middlewares.kopi-teh.headers.SSLHost=${DOMAIN_NAME}
+      - traefik.http.middlewares.kopi-teh.headers.browserXSSFilter=true
+      - traefik.http.middlewares.kopi-teh.headers.contentTypeNosniff=true
+      - traefik.http.middlewares.kopi-teh.headers.forceSTSHeader=true
+      - traefik.http.middlewares.kopi-teh.headers.STSIncludeSubdomains=true
+      - traefik.http.middlewares.kopi-teh.headers.STSPreload=true
+      - traefik.http.routers.kopi-teh.middlewares=kopi-teh@docker
 
 networks:
-  traefik:
+  App-Net:
+    external: true
+  kopi-teh_default:
     external: true
